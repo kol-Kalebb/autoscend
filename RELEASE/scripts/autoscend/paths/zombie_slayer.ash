@@ -117,7 +117,7 @@ boolean lureMinions(int target)
 	// Finish choice adventure if started
 	if(exchanged) visit_url("choice.php?pwd&whichchoice=599&option=5");
 
-	return my_hp() >= target;
+	return my_mp() >= target;
 }
 
 boolean summonMinions(int target, int meat_reserve)
@@ -155,7 +155,7 @@ boolean summonMinions(int target, int meat_reserve)
 		}
 	}
 
-	return my_hp() >= target;
+	return my_mp() >= target;
 }
 
 boolean zombieSlayer_acquireMP(int goal, int meat_reserve)
