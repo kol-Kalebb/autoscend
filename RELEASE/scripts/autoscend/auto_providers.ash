@@ -531,6 +531,7 @@ float provideInitiative(int amt, location loc, boolean doEquips, boolean specula
 		//organized by %/mp and %. Skills
 		Living Fast, //100%, 5mp
 		Stretched, //75%, 10mp
+		Slippery as a Seal, //+50%, 5mp
 		Cletus's Canticle of Celerity, //20%, 4mp
 		Springy Fusilli, //40%, 10mp
 		Soulerskates, //30%, 25 soulsauce
@@ -871,8 +872,10 @@ int [element] provideResistances(int [element] amt, location loc, boolean doEqui
 		{
 			//Buff fam weight early
 			buffMaintain($effect[Leash of Linguini]);
+			buffMaintain($effect[Thoughtful Empathy]);
 			buffMaintain($effect[Empathy]);
 			buffMaintain($effect[Blood Bond]);
+			buffMaintain($effect[Only Dogs Love a Drunken Sailor]);
 			//Manual override for the resfam to be the Cooler Yeti when we ONLY want Cold Resistance and it is better than what we already chose from one of the multi-res fams
 			if(auto_haveCoolerYeti() && count(amt) == 1 && amt[$element[Cold]] > 0)
 			{
@@ -1115,6 +1118,8 @@ float [stat] provideStats(int [stat] amt, location loc, boolean doEquips, boolea
 		Juiced and Loose,					//+50% mus. nuclear autumn only. 3 MP/adv
 		Quiet Determination,				//+25% mus. facial expression. 1 MP/adv
 		Rage of the Reindeer,				//+10% mus. +10 weapon dmg. 1 MP/adv
+		Strength of the Tortoise,				//+10 mus. 0.2 MP/adv.
+		Disco over Matter,				//+10 mus. 0.2 MP/adv.
 		Power Ballad of the Arrowsmith,		//+10 mus. +20 maxHP. song. 5 MP (duration varies).
 		Seal Clubbing Frenzy,				//+2 mus. 0.2 MP/adv
 		Patience of the Tortoise,			//+1 mus. +3 maxHP. 0.2 MP/adv
@@ -1122,6 +1127,8 @@ float [stat] provideStats(int [stat] amt, location loc, boolean doEquips, boolea
 		// myst effects
 		Mind Vision,						//+50% mys. nuclear autumn only. 3 MP/adv
 		Quiet Judgement,					//+25% mys. facial expression. 1 MP/adv
+		Tubes of Universal Meat,				//+10 mys. 0.2 MP/adv.
+		Mariachi Moisture,				//+10 mus. 0.2 MP/adv.
 		The Magical Mojomuscular Melody,	//+10 mys. +20 maxMP. song. 3 MP (duration varies).
 		Pasta Oneness,						//+2 mys. 0.2 MP/adv
 		Saucemastery,						//+1 mys. +3 maxMP. 0.2 MP/adv
@@ -1129,6 +1136,8 @@ float [stat] provideStats(int [stat] amt, location loc, boolean doEquips, boolea
 		// moxie effects
 		Impeccable Coiffure,				//+50% mox. nuclear autumn only. 3 MP/adv
 		Song of Bravado,					//+15% all. NOT a song. 10 MP/adv
+		Slippery as a Seal,				//+10 mox. 0.2 MP/adv.
+		Lubricating Sauce,				//+10 mox. 0.2 MP/adv.
 		The Moxious Madrigal,				//+10 mox. song. 2 MP (duration varies).
 		Disco State of Mind,				//+2 mox. 0.2 MP/adv
 		Mariachi Mood,						//+1 mox. +3 maxHP. 0.2 MP/adv
@@ -1506,6 +1515,7 @@ float provideMeat(int amt, location loc, boolean doEverything, boolean speculati
 		Heart of Pink, //20% meat, +3 all stats
 		Kindly Resolve, //5 fam weight
 		Human-Machine Hybrid, //5 fam weight, DA +50, DR 5
+		Only Dogs Love a Drunken Sailor, //5 fam weight, rivalrous with item drop
 		Sweet Heart, // Muscle +X, +2X% meat
 		So You Can Work More... //10% meat
 	]; // ef_to_try
@@ -1628,6 +1638,26 @@ float provideMeat(int amt, location loc, boolean doEverything, boolean speculati
 		}
 		if(pass())
 			return result();
+		if (!in_tcrs() && !in_small() && !get_property("auto_limitConsume").to_boolean() && have_effect($effect[Tryptofan]) == 0 && creatable_amount($item[prize turkey]) > 0 && canEat($item[prize turkey]) && stomach_left() > $item[prize turkey].fullness) {
+			if(!speculative)
+			{
+				buy($coinmaster[Skeleton of Crimbo Past], 1, $item[prize turkey]);
+				autoEat(1, $item[prize turkey]);
+			}
+			handleEffect($effect[Tryptofan]); //100% meat, 50 init
+			if(pass())
+				return result();
+		}
+		if (!in_tcrs() && have_effect($effect[Grueling Gravitas]) == 0 && creatable_amount($item[medicinal gruel]) > 0 && spleen_left() > $item[medicinal gruel].spleen) {
+			if(!speculative)
+			{
+				buy($coinmaster[Skeleton of Crimbo Past], 1, $item[medicinal gruel]);
+				autoChew(1, $item[medicinal gruel]);
+			}
+			handleEffect($effect[Grueling Gravitas]); //5 fam weight
+			if(pass())
+				return result();
+		}
 		if(auto_totalEffectWishesAvailable() > 0)
 		{
 			boolean success = true;
@@ -1806,7 +1836,8 @@ float provideItem(int amt, location loc, boolean doEverything, boolean speculati
 	// unlimited skills
 	if(tryEffects($effects[
 		Fat Leon\'s Phat Loot Lyric, //20% item
-		Singer\'s Faithful Ocelot //10% item
+		Singer\'s Faithful Ocelot, //10% item
+		Who's Going to Pay This Drunken Sailor? //25% item, rivalrous with +5 lb fam weight
 	]))
 		return result();
 
@@ -2013,6 +2044,26 @@ float provideItem(int amt, location loc, boolean doEverything, boolean speculati
 		}
 		if(pass())
 			return result();
+		if (!in_tcrs() && !in_small() && !get_property("auto_limitConsume").to_boolean() && have_effect($effect[Ordained]) == 0 && creatable_amount($item[Smoking Pope]) > 0 && canDrink($item[Smoking Pope]) && inebriety_left() > $item[Smoking Pope].inebriety) {
+			if(!speculative)
+			{
+				buy($coinmaster[Skeleton of Crimbo Past], 1, $item[Smoking Pope]);
+				autoDrink(1, $item[Smoking Pope]);
+			}
+			handleEffect($effect[Ordained]); //50% item, 50% skeleton damage
+			if(pass())
+				return result();
+		}
+		if (!in_tcrs() && have_effect($effect[Grueling Gravitas]) == 0 && creatable_amount($item[medicinal gruel]) > 0 && spleen_left() > $item[medicinal gruel].spleen) {
+			if(!speculative)
+			{
+				buy($coinmaster[Skeleton of Crimbo Past], 1, $item[medicinal gruel]);
+				autoChew(1, $item[medicinal gruel]);
+			}
+			handleEffect($effect[Grueling Gravitas]); //5 fam weight
+			if(pass())
+				return result();
+		}
 		if(auto_totalEffectWishesAvailable() > 0)
 		{
 			boolean success = true;

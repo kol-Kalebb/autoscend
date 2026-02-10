@@ -596,7 +596,7 @@ string banisherCombatString(phylum enemyPhylum, location loc, boolean inCombat)
 	if(inCombat)
 		auto_log_info("Finding a phylum banisher to use on " + enemyPhylum + " at " + loc, "green");
 
-	if(inCombat ? (my_familiar() == $familiar[Patriotic Eagle] && get_property("screechCombats").to_int() == 0) : (!in_avantGuard() && pathAllowsChangingFamiliar() && !auto_famKill($familiar[Patriotic Eagle], loc) && auto_have_familiar($familiar[Patriotic Eagle]) && (get_property("screechCombats").to_int() == 0) && !in_glover()))
+	if(inCombat ? (my_familiar() == $familiar[Patriotic Eagle] && get_property("screechCombats").to_int() == 0 && !in_glover()) : (!in_avantGuard() && pathAllowsChangingFamiliar() && !auto_famKill($familiar[Patriotic Eagle], loc) && auto_have_familiar($familiar[Patriotic Eagle]) && (get_property("screechCombats").to_int() == 0) && !in_glover()))
 	{
 		return "skill" + $skill[%fn\, Release the Patriotic Screech!];
 	}
@@ -828,6 +828,11 @@ string banisherCombatString(monster enemy, location loc, boolean inCombat)
 	if((inCombat ? auto_have_skill($skill[Monkey Slap]) : possessEquipment($item[cursed monkey\'s paw])) && auto_is_valid($skill[Monkey Slap]) && get_property("_monkeyPawWishesUsed").to_int() == 0 && !(used contains "Monkey Slap"))
 	{
 		return "skill " + $skill[Monkey Slap];
+	}
+
+	if((inCombat ? auto_have_skill($skill[Sea *dent: Throw a Lightning Bolt]) : possessEquipment($item[Monodent of the Sea])) && auto_is_valid($skill[Sea *dent: Throw a Lightning Bolt]) && get_property("_seadentLightningUsed").to_int() < 11 && !(used contains "Sea *dent: Throw a Lightning Bolt"))
+	{
+		return "skill " + $skill[Sea *dent: Throw a Lightning Bolt];
 	}
 	
 	//[Nanorhino] familiar specific banish. fairly low priority as it consumes 40 to 50 adv worth of a decent buff.

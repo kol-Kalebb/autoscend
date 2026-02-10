@@ -378,6 +378,9 @@ boolean auto_pre_adventure()
 	if (combatModifier._boolean && !auto_queueIgnore()) {
 		acquireCombatMods(combatModifier._int, true);
 	}
+	
+	//evaluate a boolean prop for the familiar files
+	auto_wantSoCP();
 
 	// Update our familiar after combat modifiers (which can set the familiar), but before Crystal Ball (familiar equip)
 	preAdvUpdateFamiliar(place);
@@ -571,6 +574,11 @@ boolean auto_pre_adventure()
 	else if(in_wildfire() && auto_haveFireExtinguisher() && place.fire_level > 3)
 	{
 		addBonusToMaximize(exting, 200); // extinguisher prevents per-round hot damage in wildfire path 
+	}
+
+	if(auto_wantToShrunkenHead(place))
+	{
+		addBonusToMaximize($item[shrunken head], 300);
 	}
 
 	if(!haveUsedPeridot(place) && auto_havePeridot() && zoneHasWantedMonsters)

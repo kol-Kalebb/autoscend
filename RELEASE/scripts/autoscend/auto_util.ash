@@ -718,6 +718,27 @@ float [monster] auto_combat_appearance_rates(location place)
 {	return auto_combat_appearance_rates(place, false);
 }
 
+float auto_zonePhylumPercent(location loc, phylum phyl)
+{
+	//Looks at potential monsters in a zone and returns the % of them that match the phylum
+	int count = 0;
+	int total = 0;
+	foreach mon, freq in auto_combat_appearance_rates(loc)
+	{
+		if(freq<=0) continue;
+		if(mon.phylum == phyl)
+		{
+			count+=1;
+		}
+		total+=1;
+	}
+	if(total==0)
+	{
+		return 0;
+	}
+	return count/total;
+}
+
 boolean[string] auto_banishesUsedAt(location loc)
 {
 	boolean[string] auto_reallyBanishesUsedAt(location loc)
@@ -860,6 +881,10 @@ boolean adjustForBanish(string combat_string)
 	if(combat_string == "skill " + $skill[Monkey Slap])
 	{
 		return autoEquip($item[cursed monkey\'s paw]);
+	}
+	if(combat_string == "skill " + $skill[Sea *dent: Throw a Lightning Bolt])
+	{
+		return autoEquip($item[Monodent of the Sea]);
 	}
 	if(combat_string == "item " + $item[Handful of split pea soup] && item_amount($item[Handful of split pea soup]) == 0)
 	{
@@ -3400,6 +3425,17 @@ boolean auto_is_valid(effect eff)
 	return glover_usable(eff.to_string());
 }
 
+boolean auto_is_valid(string str)
+{
+	// unknown entries, presumably Bookshelf skills
+	if(my_path() == $path[Trendy])
+	{
+		return is_trendy(str);
+	}
+	
+	return is_unrestricted(str);
+}
+
 void auto_log(string s, string color, int log_level)
 {
 	if(log_level > get_property("auto_log_level").to_int())
@@ -5268,7 +5304,7 @@ boolean auto_wantToFreeKillWithNoDrops(location loc, monster enemy)
 	}
 
 	// look for specific monsters in zones where some monsters we do care about
-	static boolean[string] targets = $strings[
+	static boolean[monster] targets = $monsters[
 		// The Haunted Bathroom
 		claw-foot bathtub,
 		malevolent hair clog,
@@ -5277,7 +5313,7 @@ boolean auto_wantToFreeKillWithNoDrops(location loc, monster enemy)
 		// The Haunted Gallery
 		cubist bull,
 		empty suit of armor,
-		guy with a pitchfork, and his wife,
+		guy with a pitchfork\, and his wife,
 
 		// The Haunted Bedroom
 		animated mahogany nightstand,
@@ -5385,4 +5421,16 @@ float auto_getElementalDamageMultiplier(element source, element target)
 	if (source == $element[spooky] && $elements[cold  , sleaze] contains target) { return 2.0; }
 	if (source == $element[stench] && $elements[hot   , spooky] contains target) { return 2.0; }
 	return 1.0;
+}
+
+
+int auto_remainingShantyTurns()
+{
+	int turns = 0;
+	foreach ef in $effects[Who's Going to Pay This Drunken Sailor?, Only Dogs Love a Drunken Sailor,
+	  I'm Smarter Than a Drunken Sailor, Look At That Drunken Sailor Dance, Let's Beat Up This Drunken Sailor]
+	{
+		turns = max(turns,have_effect(ef));
+	}
+	return turns;
 }

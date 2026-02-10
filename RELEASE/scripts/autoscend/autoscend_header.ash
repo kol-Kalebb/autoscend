@@ -668,6 +668,27 @@ string bestBusk(int[string] powers, string effectMultiplier);
 boolean beretBusk(string effectMultiplier);
 boolean beretBusk();
 boolean auto_haveCoolerYeti();
+boolean auto_haveMobiusRing();
+int auto_paradoxicity();
+boolean auto_timeIsAStripPossible();
+void mobiusChoiceHandler(int choice, string page);
+int auto_timeCopFights();
+boolean auto_haveMonodent();
+boolean auto_waveTheZone();
+boolean auto_talkToSomeFish(location loc, monster enemy);
+boolean auto_haveShrunkenHead();
+boolean auto_wantToShrunkenHead(monster enemy);
+boolean auto_wantToShrunkenHead(location place);
+boolean auto_haveCrimboSkeleton();
+void auto_wantSoCP();
+
+########################################################################################################
+//Defined in autoscend/iotms/mr2026.ash
+boolean auto_haveLegendarySealClubbingClub();
+int auto_clubEmBackInTimesRemaining();
+int auto_clubEmAcrossTheBattlefieldsRemaining();
+int auto_clubEmIntoNextWeeksRemaining();
+boolean wantToClubEmBackInTime(location loc, monster enemy);
 
 ########################################################################################################
 //Defined in autoscend/iotms/ttt.ash
@@ -1948,6 +1969,7 @@ boolean canYellowRay(monster target);
 boolean canYellowRay();
 float[monster] auto_combat_appearance_rates(location place, boolean queue);
 float[monster] auto_combat_appearance_rates(location place);
+float auto_zonePhylumPercent(location loc, phylum phyl);
 boolean[string] auto_banishesUsedAt(location loc);
 boolean auto_wantToBanish(monster enemy, location loc);
 boolean auto_wantToBanish(phylum enemyphylum, location loc);
@@ -2062,6 +2084,7 @@ boolean auto_is_valid(item it);
 boolean auto_is_valid(familiar fam);
 boolean auto_is_valid(skill sk);
 boolean auto_is_valid(effect eff);
+boolean auto_is_valid(string str);
 void auto_log(string s, string color, int log_level);
 void auto_log_error(string s);
 void auto_log_warning(string s, string color);
@@ -2139,3 +2162,4 @@ modifier resistanceModifier (element el);
 modifier damageModifier     (element el);
 modifier spellDamageModifier(element el);
 float auto_getElementalDamageMultiplier(element source, element target);
+int auto_remainingShantyTurns();

@@ -643,3 +643,390 @@ boolean auto_haveCoolerYeti()
 	}
 	return false;
 }
+
+boolean auto_haveMobiusRing()
+{
+	item ring = $item[M&ouml;bius ring];
+	return (auto_is_valid(ring) && possessEquipment(ring));
+}
+
+int auto_paradoxicity()
+{
+	// we either need to visit the charpane or status.php to update this
+	visit_url("charpane.php", false);
+	return my_paradoxicity();
+}
+
+boolean auto_timeIsAStripPossible()
+{
+	if(!auto_haveMobiusRing())
+	{
+		return false;
+	}
+
+	int mobiusNCs = get_property("_mobiusStripEncounters").to_int();
+	int mobiusTurn = get_property("_lastMobiusStripTurn").to_int();
+	if((mobiusNCs < 1 && mobiusTurn <= 0) ||
+	(mobiusNCs < 2 && mobiusTurn - turns_played() >= 7) ||
+	(mobiusNCs < 3 && mobiusTurn - turns_played() >= 13) ||
+	(mobiusNCs < 4 && mobiusTurn - turns_played() >= 19) ||
+	(mobiusNCs < 5 && mobiusTurn - turns_played() >= 25) ||
+	(mobiusNCs < 6 && mobiusTurn - turns_played() >= 31) ||
+	(mobiusNCs < 11 && mobiusTurn - turns_played() >= 41) ||
+	(mobiusNCs < 16 && mobiusTurn - turns_played() >= 51) ||
+	(mobiusNCs >= 16 && mobiusTurn - turns_played() >= 76))
+	{
+		return true;
+	}
+
+	return false;
+}
+
+void mobiusChoiceHandler(int choice, string page)
+{
+	if(!auto_haveMobiusRing())
+	{
+		run_choice(1); //should never get here but might as well mitigate
+	}
+
+	string[int] choices = available_choice_options();
+	int[string] choiceMap;
+	foreach idx, text in choices
+	{
+		choiceMap[text] = idx;
+	}
+
+	void mobiusChoice(string opt) {
+			int num = choiceMap[opt];
+			handleTracker($item[M&ouml;bius ring], opt, "auto_otherstuff"); 
+			run_choice(num);
+	}
+
+	string pos;
+	// we want to get +15 paradoxicity for more time cops and the 13-paradoxicity +item effect
+	// in a single day, we'll hit the NC maybe 9 times
+	// we can't guarantee we'll be able to use the effects, but the items are good
+	// taking the long odds would be good if we can definitely remove the effect / handle the HP loss
+
+	if (isAboutToPowerlevel()) {
+		// if we're going to powerlevel, we want the +stat%, +stat and direct stat options
+		pos = "Bake Susie a cupcake";
+		if (choiceMap contains pos) {
+			mobiusChoice(pos);
+			return;
+		}
+		pos = "Draw a goatee on yourself";
+		if (choiceMap contains pos) {
+			mobiusChoice(pos);
+			return;
+		}
+		switch (my_primestat())
+		{
+			case $stat[Muscle]:
+				pos = "Lift yourself up by your bootstraps";
+				if (choiceMap contains pos) {
+					mobiusChoice(pos);
+					return;
+				}
+				break;
+			case $stat[Mysticality]:
+				pos = "Mind your own business";
+				if (choiceMap contains pos) {
+					mobiusChoice(pos);
+					return;
+				}
+				break;
+			case $stat[Moxie]:
+				pos = "Shoot yourself in the foot";
+				if (choiceMap contains pos) {
+					mobiusChoice(pos);
+					return;
+				}
+				break;
+		}
+	}
+
+	// cupcake is 5-7 adv for 1 full, +1 paradox
+	if (canEat($item[Susie's cupcake])) {
+		pos = "Steal a cupcake from young Susie";
+		if (choiceMap contains pos) {
+			mobiusChoice(pos);
+			return;
+		}
+	}
+
+	// first clock per day gives 3 adventures, second gives 2
+	if (get_property("_clocksUsed").to_int() < 2) {
+		pos = "Go back and set an alarm";
+		if (choiceMap contains pos) {
+			mobiusChoice(pos);
+			if(item_amount($item[clock]) > 0)
+			{
+				use(1, $item[clock]);
+			}
+			return;
+		}
+		// gives +15 myst, +30 MP: rarely useful but sets up the clock
+		pos = "Go back and take a 20-year-long nap";
+		if (choiceMap contains pos) {
+			mobiusChoice(pos);
+			return;
+		}
+	}
+
+	// 100 turns of +5 fam xp is worth refreshing
+	if (have_effect($effect[Lifted by your Bootstraps]) == 0) {
+		pos = "Let yourself get lifted up by your bootstraps";
+		if (choiceMap contains pos) {
+			mobiusChoice(pos);
+			return;
+		}
+	}
+
+	if (auto_paradoxicity() < 15) {
+		// take paradox-increasing options without negative effects in approximate utility order
+		// some would have been taken earlier, so taking them here implies they're less useful
+		foreach str in $strings[
+			Stop your arch-nemesis as a baby,
+			Borrow meat from your future,
+			Hey\, free gun!,
+			Shoot yourself in the foot,
+			Mind your own business,
+			Lift yourself up by your bootstraps,
+			Draw a goatee on yourself,
+			Go for a nature walk,
+			Steal a cupcake from young Susie,
+			Plant some trees and harvest them in the future,
+			Borrow a cup of sugar from yourself,
+			Steal a club from the past,
+			Go back and take a 20-year-long nap,
+			Plant some seeds in the distant past,
+			Go back and write a best-seller.,
+			Defend yourself,
+			Play Schroedinger's Prank on yourself,
+			Peek in on your future,
+			Give your past self investment tips,
+		] {
+			if (choiceMap contains str) {
+				mobiusChoice(str);
+				return;
+			}
+		}
+	}
+
+	// we've done everything we care about, find a loop
+	if (canEat($item[Susie's cupcake])) {
+		pos = "Steal a cupcake from young Susie";
+		if (choiceMap contains pos) {
+			mobiusChoice(pos);
+			return;
+		}
+		pos = "Bake Susie a cupcake";
+		if (choiceMap contains pos) {
+			mobiusChoice(pos);
+			return;
+		}
+	}
+
+	// meat is normally useful
+	pos = "Borrow meat from your future";
+	if (choiceMap contains pos) {
+		mobiusChoice(pos);
+		return;
+	}
+	pos = "Repay yourself in the past";
+	if (choiceMap contains pos) {
+		mobiusChoice(pos);
+		return;
+	}
+
+	run_choice(1);
+	return;
+}
+
+int auto_timeCopFights()
+{
+	return get_property("_timeCopsFoughtToday").to_int();
+}
+
+boolean auto_haveMonodent()
+{
+	item dent = $item[Monodent of the Sea];
+	return (auto_is_valid(dent) && possessEquipment(dent));
+}
+
+boolean auto_waveTheZone()
+{
+	if(!auto_haveMonodent())
+	{
+		return false;
+	}
+
+	//Already Summoned a Wave today
+	if(get_property("_seadentWaveUsed").to_boolean())
+	{
+		return false;
+	}
+
+	boolean waveTheZone = false;
+
+	//Force the Monodent of the Sea when adventuring in a zone that we might want to Summon a Wave in
+	//Get Fishy turns from free fights
+	if($locations[Shadow Rift (The Ancient Buried Pyramid), Shadow Rift (The Hidden City), Shadow Rift (The Misspelled Cemetary),
+	Cyberzone 1, Cyberzone 2, Cyberzone 3] contains my_location() && my_path() == $path[11,037 Leagues Under the Sea])
+	{
+		autoForceEquip($item[Monodent of the Sea], true);
+		waveTheZone = true;
+	}
+	//Get 30% more meat drop. Only useful if weapon slot has < 30% meat drop
+	if(my_location() == $location[The Themthar Hills] && numeric_modifier(equipped_item($slot[weapon]), $modifier[Meat Drop]) < 30.0)
+	{
+		autoForceEquip($item[Monodent of the Sea], true);
+		waveTheZone = true;
+	}
+	if(waveTheZone)
+	{
+		if(use_skill(1, $skill[Sea *dent: Summon a Wave]))
+		{
+			handleTracker($item[Monodent of the Sea], my_location().to_string(), "Summon a Wave", "auto_otherstuff");
+			return true;
+		}
+	}
+	return false;
+}
+
+boolean auto_talkToSomeFish(location loc, monster enemy)
+{
+	// returns true if we want to cast Talk to Some Fish. Not intended to exhaustivly list all valid targets
+	// also, this is not actually a free fight, but this is a safe listing of targets
+
+	if(!auto_haveMonodent()) return false;
+	if(!auto_is_valid($skill[Sea *dent: Talk to Some Fish])) return false;
+	// don't use Talk to Some Fish against inherently free fights
+	if (isFreeMonster(enemy, loc)) { return false; }
+	// need hippy / frat kills
+	if(loc == $location[The Battlefield (Frat Uniform)] || loc == $location[The Battlefield (Hippy Uniform)])
+	{
+		return false;
+	}
+	// need chained fights
+	if(loc == $location[The Haunted Bedroom])
+	{
+		return false;
+	}
+	// some fish has no meat drop, so this doesn't take familiar meat modifiers into account
+	if(loc == $location[The Fungus Plains])
+	{
+		return false;
+	}
+	
+	return auto_wantToFreeKillWithNoDrops(loc, enemy);
+}
+
+boolean auto_haveShrunkenHead()
+{
+	if(get_property("hasShrunkenHead").to_boolean() && auto_is_valid($item[shrunken head]))
+	{
+		return true;
+	}
+	return false;
+}
+
+boolean auto_wantToShrunkenHead(monster enemy)
+{
+	if(!auto_haveShrunkenHead())
+	{
+		return false;
+	}
+
+	if(!(canUse($skill[Prepare to reanimate your Foe])))
+	{
+		return false;
+	}
+
+	if (!enemy.copyable)
+	{
+		return false;
+	}
+
+	// as the created zombie doesn't die, get one that gives +item and no passive damage
+	boolean hasItem = false;
+	foreach i, bonus in shrunken_head_zombie(enemy)
+	{
+		if(bonus.contains_text("Attack"))
+		{
+			return false;
+		}
+		if(bonus.contains_text("Item Drop"))
+		{
+			hasItem = true;
+		}
+	}
+
+	return hasItem;
+}
+
+boolean auto_wantToShrunkenHead(location place)
+{
+	if(!auto_haveShrunkenHead())
+	{
+		return false;
+	}
+
+	monster next = get_property("auto_nextEncounter").to_monster();
+	if(next != $monster[none])
+	{
+		//next monster is forced by zone mechanics or some other mechanism
+		return auto_wantToShrunkenHead(next);
+	}
+	else
+	{
+		foreach i,mon in get_monsters(place)
+		{
+			if(appearance_rates(place)[mon] > 0)
+			{
+				if (auto_wantToShrunkenHead(mon))
+				{
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+}
+
+boolean auto_haveCrimboSkeleton()
+{
+	if(auto_have_familiar($familiar[Skeleton of Crimbo Past]))
+	{
+		return true;
+	}
+	return false;
+}
+
+void auto_wantSoCP()
+{
+	if(!auto_haveCrimboSkeleton())
+	{
+		return;
+	}
+	set_property("auto_preferSoCP", true);
+	if(get_property("_knuckleboneDrops").to_int() == 100)
+	{
+		set_property("auto_preferSoCP", false);
+		return;
+	}
+	float amt = 0;
+	foreach phyl in $phylums[constellation, elemental, hippy, horror, mer-kin, plant, slime, bug]
+	{
+		amt += auto_zonePhylumPercent(my_location(), phyl);
+	}
+	if(amt > 0.1)
+	{
+		//want 10% or fewer of the available mobs to be knucklebone eligible, otherwise why bother with this guy vs fairychauns/fairyballs/fairyeverythings?
+		set_property("auto_preferSoCP", false);
+		return;
+	}
+	
+	return;
+}
